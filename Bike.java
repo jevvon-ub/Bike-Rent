@@ -1,60 +1,41 @@
+import java.util.UUID;
+
 enum BikeType {
-    MOUNTAIN,
-    FOLDING,
-    ELECTRIC,
+    MOUNTAIN, FOLDING, ELECTRIC
 }
 
 abstract class Bike {
     private String id;
-    private String brand;
-    private BikeType type;
+    private String name;
     private double pricePerHour;
+    private boolean available;
 
-    public Bike(String brand, BikeType type, double pricePerHour) {
-        this.id = generateUniqueId();
-        this.brand = brand;
-        this.type = type;
+    public Bike(String name, double pricePerHour) {
+        this.id = UUID.randomUUID().toString().substring(0, 8);
+        this.name = name;
         this.pricePerHour = pricePerHour;
-    }
-
-    private String generateUniqueId() {
-        String uniqueId = "";
-        for (int i = 0; i < 5; i++) {
-            int randomNum = (int) (Math.random() * 36);
-            if (randomNum < 10) {
-                uniqueId += (randomNum);
-            } else {
-                uniqueId += ((char) ('A' + randomNum - 10));
-            }
-        }
-
-        return uniqueId;
-    }
-
-    public double calculateRentalCost(int hours) {
-        return hours * pricePerHour;
+        this.available = true;
     }
 
     public String getId() {
         return id;
     }
 
-    public String getBrand() {
-        return brand;
-    }
-
-    public BikeType getType() {
-        return type;
+    public String getName() {
+        return name;
     }
 
     public double getPricePerHour() {
         return pricePerHour;
     }
 
-    public void getInfo() {
-        System.out.println("Bike ID: " + id);
-        System.out.println("Brand: " + brand);
-        System.out.println("Type: " + type);
-        System.out.println("Price per hour: Rp " + pricePerHour);
+    public boolean isAvailable() {
+        return available;
     }
+
+    public void setAvailable(boolean available) {
+        this.available = available;
+    }
+
+    public abstract BikeType getType();
 }

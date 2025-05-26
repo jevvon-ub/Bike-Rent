@@ -1,14 +1,10 @@
-package GUI;
-
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
 import javax.swing.table.DefaultTableModel;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.util.ArrayList;
 import java.util.List;
-import java.util.UUID;
 
 // Main GUI application class
 public class App extends JFrame {
@@ -20,7 +16,7 @@ public class App extends JFrame {
     // Color constants
     private static final Color PRIMARY_COLOR = new Color(70, 130, 180); // Steel blue
     private static final Color SECONDARY_COLOR = new Color(240, 248, 255); // Alice blue
-    private static final Color ACCENT_COLOR = new Color(255, 69, 0); // Orange-red
+    private static final Color PRI = new Color(255, 69, 0); // Orange-red
 
     // Constructor
     public App() {
@@ -33,9 +29,9 @@ public class App extends JFrame {
         rentalManager = new RentalManager();
 
         // Add some sample bikes
-        rentalManager.addBike(new MountainBike("Mountain Explorer", 10.0));
-        rentalManager.addBike(new FoldingBike("City Folder", 15.0));
-        rentalManager.addBike(new ElectricBike("Electric Cruiser", 20.0));
+        rentalManager.addBike(new MountainBike("Mountain Explorer", 10000));
+        rentalManager.addBike(new FoldingBike("City Folder", 8000));
+        rentalManager.addBike(new ElectricBike("Electric Cruiser", 15000));
 
         // Setup the layout
         contentPane = new JPanel();
@@ -58,6 +54,7 @@ public class App extends JFrame {
         cardsPanel.add(createRentBikePanel(), "RentBike");
         cardsPanel.add(createListBikesPanel(), "ListBikes");
         cardsPanel.add(createRentalHistoryPanel(), "RentalHistory");
+        cardsPanel.add(createReturnBikePanel(), "ReturnBike"); // Add this line
 
         // Show welcome panel by default
         cardLayout.show(cardsPanel, "Welcome");
@@ -81,8 +78,8 @@ public class App extends JFrame {
         sidebar.add(Box.createRigidArea(new Dimension(0, 30)));
 
         // Navigation buttons
-        String[] buttonLabels = { "Home", "Add Bike", "Rent Bike", "Available Bikes", "Rental History" };
-        String[] cardNames = { "Welcome", "AddBike", "RentBike", "ListBikes", "RentalHistory" };
+        String[] buttonLabels = { "Home", "Add Bike", "Rent Bike", "Available Bikes", "Rental History", "Return Bike" };
+        String[] cardNames = { "Welcome", "AddBike", "RentBike", "ListBikes", "RentalHistory", "ReturnBike" };
 
         for (int i = 0; i < buttonLabels.length; i++) {
             JButton button = createMenuButton(buttonLabels[i], cardNames[i]);
@@ -107,7 +104,7 @@ public class App extends JFrame {
         // Add hover effect
         button.addMouseListener(new java.awt.event.MouseAdapter() {
             public void mouseEntered(java.awt.event.MouseEvent evt) {
-                button.setBackground(ACCENT_COLOR);
+                button.setBackground(PRI);
             }
 
             public void mouseExited(java.awt.event.MouseEvent evt) {
@@ -119,6 +116,117 @@ public class App extends JFrame {
         button.addActionListener(e -> cardLayout.show(cardsPanel, cardName));
 
         return button;
+    }
+
+    private JPanel createReturnBikePanel() {
+        JPanel panel = new JPanel(new BorderLayout());
+        panel.setBackground(SECONDARY_COLOR);
+
+        JLabel titleLabel = new JLabel("Return a Rented Bike");
+        titleLabel.setFont(new Font("Arial", Font.BOLD, 24));
+        titleLabel.setHorizontalAlignment(JLabel.CENTER);
+        titleLabel.setForeground(PRIMARY_COLOR);
+        titleLabel.setBorder(BorderFactory.createEmptyBorder(20, 0, 20, 0));
+
+        JPanel content = new JPanel(new GridBagLayout());
+        content.setBackground(SECONDARY_COLOR);
+        GridBagConstraints gbc = new GridBagConstraints();
+        gbc.insets = new Insets(10, 10, 10, 10);
+        gbc.fill = GridBagConstraints.HORIZONTAL;
+
+        JLabel selectBikeLabel = new JLabel("Select Rented Bike:");
+        selectBikeLabel.setFont(new Font("Arial", Font.PLAIN, 16));
+
+        DefaultComboBoxModel<String> rentedBikeComboModel = new DefaultComboBoxModel<>();
+        JComboBox<String> rentedBikeComboBox = new JComboBox<>(rentedBikeComboModel);
+        rentedBikeComboBox.setFont(new Font("Arial", Font.PLAIN, 16));
+
+        // Populate the combo box with currently rented bikes
+        updateRentedBikeComboBox(rentedBikeComboModel);
+
+        JButton returnButton = new JButton("Return Bike");
+        returnButton.setFont(new Font("Arial", Font.BOLD, 16));
+        returnButton.setBackground(PRIMARY_COLOR);
+        returnButton.setForeground(Color.WHITE);
+        returnButton.setFocusPainted(false);
+
+        JLabel statusLabel = new JLabel("");
+        statusLabel.setFont(new Font("Arial", Font.PLAIN, 16));
+        statusLabel.setHorizontalAlignment(JLabel.CENTER);
+
+        returnButton.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                if (rentedBikeComboBox.getSelectedIndex() == -1) {
+                    statusLabel.setText("Please select a bike to return.");
+                    statusLabel.setForeground(Color.RED);
+                    return;
+                }
+
+                String selectedItem = (String) rentedBikeComboBox.getSelectedItem();
+                String bikeId = selectedItem.split(" - ")[0];
+
+                boolean success = rentalManager.returnBike(bikeId);
+
+                if (success) {
+                    statusLabel.setText("Bike returned successfully!");
+                    statusLabel.setForeground(new Color(0, 128, 0)); // Dark green
+                    updateRentedBikeComboBox(rentedBikeComboModel); // Refresh the list
+
+                    // Update the list of bikes panel
+                    cardsPanel.remove(3); // Remove current ListBikes panel
+                    cardsPanel.add(createListBikesPanel(), "ListBikes", 3);
+
+                    // Update rental history panel (optional, as return doesn't change history
+                    // directly)
+                    cardsPanel.remove(4);
+                    cardsPanel.add(createRentalHistoryPanel(), "RentalHistory", 4);
+                } else {
+                    statusLabel.setText("Failed to return the bike. It might already be available.");
+                    statusLabel.setForeground(Color.RED);
+                }
+            }
+        });
+
+        gbc.gridx = 0;
+        gbc.gridy = 0;
+        content.add(selectBikeLabel, gbc);
+
+        gbc.gridx = 1;
+        content.add(rentedBikeComboBox, gbc);
+
+        gbc.gridx = 0;
+        gbc.gridy = 1;
+        gbc.gridwidth = 2;
+        gbc.insets = new Insets(20, 10, 10, 10);
+        content.add(returnButton, gbc);
+
+        gbc.gridy = 2;
+        content.add(statusLabel, gbc);
+
+        panel.add(titleLabel, BorderLayout.NORTH);
+        panel.add(content, BorderLayout.CENTER);
+
+        // Add a listener to refresh the combo box when this panel is shown
+        panel.addComponentListener(new java.awt.event.ComponentAdapter() {
+            @Override
+            public void componentShown(java.awt.event.ComponentEvent e) {
+                updateRentedBikeComboBox(rentedBikeComboModel);
+                statusLabel.setText("");
+            }
+        });
+
+        return panel;
+    }
+
+    // Helper method to update the rented bike combo box
+    private void updateRentedBikeComboBox(DefaultComboBoxModel<String> model) {
+        model.removeAllElements();
+        for (Bike bike : rentalManager.getAllBikes()) { // Iterate all bikes
+            if (!bike.isAvailable()) { // Add only rented bikes
+                model.addElement(bike.getId() + " - " + bike.getName() + " (" + bike.getType() + ")");
+            }
+        }
     }
 
     // Create welcome panel
@@ -183,7 +291,7 @@ public class App extends JFrame {
         nameField.setFont(new Font("Arial", Font.PLAIN, 16));
 
         // Bike price field
-        JLabel priceLabel = new JLabel("Price per Hour ($):");
+        JLabel priceLabel = new JLabel("Price per Hour (Rp):");
         priceLabel.setFont(new Font("Arial", Font.PLAIN, 16));
 
         JTextField priceField = new JTextField(20);
@@ -192,8 +300,8 @@ public class App extends JFrame {
         // Add button
         JButton addButton = new JButton("Add Bike");
         addButton.setFont(new Font("Arial", Font.BOLD, 16));
-        addButton.setBackground(ACCENT_COLOR);
-        addButton.setForeground(Color.WHITE);
+        addButton.setBackground(Color.BLUE);
+        addButton.setForeground(Color.BLUE);
         addButton.setFocusPainted(false);
 
         // Status label
@@ -345,15 +453,15 @@ public class App extends JFrame {
         // Get available bikes and add to combo box
         List<Bike> availableBikes = rentalManager.getAvailableBikes();
         for (Bike bike : availableBikes) {
-            bikeComboModel.addElement(bike.getId() + " - " + bike.getName() + " (" + bike.getType() + ") - $"
+            bikeComboModel.addElement(bike.getId() + " - " + bike.getName() + " (" + bike.getType() + ") - Rp "
                     + bike.getPricePerHour() + "/hr");
         }
 
         // Rent button
         JButton rentButton = new JButton("Rent Now");
         rentButton.setFont(new Font("Arial", Font.BOLD, 16));
-        rentButton.setBackground(ACCENT_COLOR);
-        rentButton.setForeground(Color.WHITE);
+        rentButton.setBackground(Color.BLUE);
+        rentButton.setForeground(Color.BLUE);
         rentButton.setFocusPainted(false);
 
         // Status label
@@ -415,7 +523,7 @@ public class App extends JFrame {
                         List<Bike> updatedBikes = rentalManager.getAvailableBikes();
                         for (Bike bike : updatedBikes) {
                             bikeComboModel.addElement(bike.getId() + " - " + bike.getName() + " (" + bike.getType()
-                                    + ") - $" + bike.getPricePerHour() + "/hr");
+                                    + ") - Rp " + bike.getPricePerHour() + "/hr");
                         }
 
                         // Update the list of bikes panel
@@ -509,7 +617,7 @@ public class App extends JFrame {
         titleLabel.setBorder(BorderFactory.createEmptyBorder(20, 0, 20, 0));
 
         // Create table with bike data
-        String[] columnNames = { "ID", "Type", "Name", "Price per Hour ($)", "Status" };
+        String[] columnNames = { "ID", "Type", "Name", "Price per Hour (Rp )", "Status" };
         DefaultTableModel model = new DefaultTableModel(columnNames, 0) {
             @Override
             public boolean isCellEditable(int row, int column) {
@@ -557,7 +665,7 @@ public class App extends JFrame {
         titleLabel.setBorder(BorderFactory.createEmptyBorder(20, 0, 20, 0));
 
         // Create table with rental history data
-        String[] columnNames = { "Customer", "Phone", "Bike", "Duration (hrs)", "Total Cost ($)" };
+        String[] columnNames = { "Customer", "Phone", "Bike", "Duration (hrs)", "Total Cost (Rp )", "Receipt" };
         DefaultTableModel model = new DefaultTableModel(columnNames, 0) {
             @Override
             public boolean isCellEditable(int row, int column) {
@@ -609,177 +717,5 @@ public class App extends JFrame {
                 frame.setVisible(true);
             }
         });
-    }
-}
-
-// Abstract bike class
-abstract class Bike {
-    private String id;
-    private String name;
-    private double pricePerHour;
-    private boolean available;
-
-    public Bike(String name, double pricePerHour) {
-        this.id = UUID.randomUUID().toString().substring(0, 8);
-        this.name = name;
-        this.pricePerHour = pricePerHour;
-        this.available = true;
-    }
-
-    public String getId() {
-        return id;
-    }
-
-    public String getName() {
-        return name;
-    }
-
-    public double getPricePerHour() {
-        return pricePerHour;
-    }
-
-    public boolean isAvailable() {
-        return available;
-    }
-
-    public void setAvailable(boolean available) {
-        this.available = available;
-    }
-
-    public abstract String getType();
-}
-
-// Mountain bike class
-class MountainBike extends Bike {
-    public MountainBike(String name, double pricePerHour) {
-        super(name, pricePerHour);
-    }
-
-    @Override
-    public String getType() {
-        return "Mountain";
-    }
-}
-
-// Folding bike class
-class FoldingBike extends Bike {
-    public FoldingBike(String name, double pricePerHour) {
-        super(name, pricePerHour);
-    }
-
-    @Override
-    public String getType() {
-        return "Folding";
-    }
-}
-
-// Electric bike class
-class ElectricBike extends Bike {
-    public ElectricBike(String name, double pricePerHour) {
-        super(name, pricePerHour);
-    }
-
-    @Override
-    public String getType() {
-        return "Electric";
-    }
-}
-
-// User class
-class User {
-    private String name;
-    private String phoneNumber;
-
-    public User(String name, String phoneNumber) {
-        this.name = name;
-        this.phoneNumber = phoneNumber;
-    }
-
-    public String getName() {
-        return name;
-    }
-
-    public String getPhoneNumber() {
-        return phoneNumber;
-    }
-}
-
-// Rental class
-class Rental {
-    private User user;
-    private Bike bike;
-    private int duration;
-    private double totalCost;
-
-    public Rental(User user, Bike bike, int duration) {
-        this.user = user;
-        this.bike = bike;
-        this.duration = duration;
-        this.totalCost = calculateCost();
-    }
-
-    private double calculateCost() {
-        return bike.getPricePerHour() * duration;
-    }
-
-    public User getUser() {
-        return user;
-    }
-
-    public Bike getBike() {
-        return bike;
-    }
-
-    public int getDuration() {
-        return duration;
-    }
-
-    public double getTotalCost() {
-        return totalCost;
-    }
-}
-
-// Rental manager class
-class RentalManager {
-    private List<Bike> bikes;
-    private List<Rental> rentalHistory;
-
-    public RentalManager() {
-        bikes = new ArrayList<>();
-        rentalHistory = new ArrayList<>();
-    }
-
-    public void addBike(Bike bike) {
-        bikes.add(bike);
-    }
-
-    public boolean rentBike(User user, String bikeId, int duration) {
-        for (Bike bike : bikes) {
-            if (bike.getId().equals(bikeId) && bike.isAvailable()) {
-                bike.setAvailable(false);
-                Rental rental = new Rental(user, bike, duration);
-                rentalHistory.add(rental);
-                return true;
-            }
-        }
-        return false;
-    }
-
-    public List<Bike> getAvailableBikes() {
-        List<Bike> availableBikes = new ArrayList<>();
-        for (Bike bike : bikes) {
-            if (bike.isAvailable()) {
-                availableBikes.add(bike);
-            }
-        }
-        return availableBikes;
-    }
-
-    public List<Bike> getAllBikes() {
-        return bikes;
-    }
-
-    public List<Rental> getRentalHistory() {
-        return rentalHistory;
     }
 }
