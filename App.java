@@ -301,7 +301,7 @@ public class App extends JFrame {
         JButton addButton = new JButton("Add Bike");
         addButton.setFont(new Font("Arial", Font.BOLD, 16));
         addButton.setBackground(Color.BLUE);
-        addButton.setForeground(Color.BLUE);
+        addButton.setForeground(Color.WHITE);
         addButton.setFocusPainted(false);
 
         // Status label
@@ -461,7 +461,7 @@ public class App extends JFrame {
         JButton rentButton = new JButton("Rent Now");
         rentButton.setFont(new Font("Arial", Font.BOLD, 16));
         rentButton.setBackground(Color.BLUE);
-        rentButton.setForeground(Color.BLUE);
+        rentButton.setForeground(Color.WHITE);
         rentButton.setFocusPainted(false);
 
         // Status label
@@ -665,7 +665,7 @@ public class App extends JFrame {
         titleLabel.setBorder(BorderFactory.createEmptyBorder(20, 0, 20, 0));
 
         // Create table with rental history data
-        String[] columnNames = { "Customer", "Phone", "Bike", "Duration (hrs)", "Total Cost (Rp )", "Receipt" };
+        String[] columnNames = { "Customer", "Phone", "Bike", "Duration (hrs)", "Total Cost (Rp )" };
         DefaultTableModel model = new DefaultTableModel(columnNames, 0) {
             @Override
             public boolean isCellEditable(int row, int column) {
@@ -703,12 +703,12 @@ public class App extends JFrame {
 
     // Main method
     public static void main(String[] args) {
-        try {
-            // Set system look and feel
-            UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
+        // try {
+        // // Set system look and feel
+        // UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
+        // } catch (Exception e) {
+        // e.printStackTrace();
+        // }
 
         // Launch the application
         SwingUtilities.invokeLater(new Runnable() {
