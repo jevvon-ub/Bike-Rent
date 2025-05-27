@@ -30,7 +30,6 @@ public class App extends JFrame {
         rentalManager.addBike(new ElectricBike("Electric Cruiser", 15000));
 
         contentPane = new JPanel();
-        contentPane.setBorder(new EmptyBorder(10, 10, 10, 10));
         contentPane.setLayout(new BorderLayout());
         setContentPane(contentPane);
 
@@ -41,7 +40,7 @@ public class App extends JFrame {
         cardsPanel = new JPanel(cardLayout);
         contentPane.add(cardsPanel, BorderLayout.CENTER);
 
-        // Menambahkan panel untuk setiap bagian
+        // // Menambahkan panel untuk setiap bagian
         cardsPanel.add(createWelcomePanel(), "Welcome");
         cardsPanel.add(createAddBikePanel(), "AddBike");
         cardsPanel.add(createRentBikePanel(), "RentBike");
@@ -56,7 +55,7 @@ public class App extends JFrame {
         JPanel sidebar = new JPanel();
         sidebar.setLayout(new BoxLayout(sidebar, BoxLayout.Y_AXIS)); // Menggunakan BoxLayout untuk tata letak vertikal
         sidebar.setBackground(PRIMARY_COLOR);
-        sidebar.setBorder(BorderFactory.createEmptyBorder(20, 20, 20, 20));
+        sidebar.setBorder(new EmptyBorder(20, 20, 20, 20)); // Padding di sekitar sidebar
         sidebar.setPreferredSize(new Dimension(200, getHeight()));
 
         JLabel titleLabel = new JLabel("Bike Rental"); // Label judul aplikasi
@@ -85,9 +84,11 @@ public class App extends JFrame {
         button.setFont(new Font("Arial", Font.PLAIN, 16));
         button.setAlignmentX(Component.CENTER_ALIGNMENT);
         button.setMaximumSize(new Dimension(160, 40));
-        button.setFocusPainted(false);
         button.setBackground(PRIMARY_COLOR);
         button.setForeground(Color.WHITE);
+
+        // Mengatur tampilan tombol agar tidak memiliki fokus atau border
+        button.setFocusPainted(false);
         button.setBorderPainted(false);
 
         // Menambahkan efek hover pada tombol
@@ -250,7 +251,7 @@ public class App extends JFrame {
         titleLabel.setFont(new Font("Arial", Font.BOLD, 24));
         titleLabel.setHorizontalAlignment(JLabel.CENTER);
         titleLabel.setForeground(PRIMARY_COLOR);
-        titleLabel.setBorder(BorderFactory.createEmptyBorder(20, 0, 20, 0));
+        titleLabel.setBorder(new EmptyBorder(20, 0, 20, 0));
 
         JPanel formPanel = new JPanel(new GridBagLayout());
         formPanel.setBackground(SECONDARY_COLOR);
@@ -360,7 +361,6 @@ public class App extends JFrame {
         gbc.gridx = 0;
         gbc.gridy = 3;
         gbc.gridwidth = 2;
-        gbc.insets = new Insets(20, 10, 10, 10);
         formPanel.add(addButton, gbc);
 
         gbc.gridy = 4;
@@ -660,12 +660,7 @@ public class App extends JFrame {
     }
 
     public static void main(String[] args) {
-        // Meluncurkan aplikasi di event dispatch thread
-        SwingUtilities.invokeLater(new Runnable() {
-            public void run() {
-                App frame = new App();
-                frame.setVisible(true);
-            }
-        });
+        App frame = new App();
+        frame.setVisible(true);
     }
 }
