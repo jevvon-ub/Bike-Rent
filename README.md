@@ -16,3 +16,9 @@ A simple rental bike system for managing bike rentals, bike inventory, and renta
 ## License
 
 This project is licensed under the MIT License.
+
+## Anggota Kelompok
+- Jevon Mozart Christian Bano
+- Zahra Mareta Putri
+- Muhammad Ihsan Fadillah
+- Norisa Defriani
